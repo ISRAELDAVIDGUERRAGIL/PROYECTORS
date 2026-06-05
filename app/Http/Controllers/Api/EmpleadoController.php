@@ -26,7 +26,7 @@ class EmpleadoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(EmpleadoRequest $request)
     {
         $empleado = Empleado::create($request->validated());
         return response()->json([
@@ -52,7 +52,7 @@ class EmpleadoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(EmpleadoRequest $request, string $id): JsonResponse
     {
         $empleado = Empleado::find($id);
         if (!$empleado) {
