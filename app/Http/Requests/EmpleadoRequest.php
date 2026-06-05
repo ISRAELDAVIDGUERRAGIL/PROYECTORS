@@ -12,7 +12,7 @@ class EmpleadoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,8 +22,15 @@ class EmpleadoRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+        $rules = [
+            'nombres' => 'required|string|max:100',
+            'apellidos' => 'required|string|max:100',
+            'fecha_nacimiento' => 'required|date|before:today',
+            'fecha_ingreso' => 'required|date|before_or_equal:today',
+            'salario' => 'required|numeric|min:0',
+            'estado' => 'required|in:activo,inactivo',
         ];
+
+        return $rules;
     }
 }
