@@ -15,6 +15,7 @@ class Empleado extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'id_cargo',
         'nombres',
         'apellidos',
         'fecha_nacimiento',
@@ -28,4 +29,9 @@ class Empleado extends Model
         'fecha_ingreso' => 'date',
         'salario' => 'decimal:2',
     ];
+
+    public function cargo()
+    {
+        return $this->belongsTo(Cargo::class, 'id_cargo', 'id_cargo');
+    }
 }
