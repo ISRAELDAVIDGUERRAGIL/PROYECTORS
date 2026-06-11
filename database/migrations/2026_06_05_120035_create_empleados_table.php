@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('empleados', function (Blueprint $table) {
             $table->id('id_empleado');
+            $table->unsignedBigInteger('id_cargo')->nullable();
             $table->string('nombres', 100);
             $table->string('apellidos', 100);
             $table->date('fecha_nacimiento');
@@ -20,6 +21,11 @@ return new class extends Migration
             $table->decimal('salario', 12, 2);
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
+
+            $table->foreign('id_cargo')
+                  ->references('id_cargo')
+                  ->on('cargos')
+                  ->onDelete('restrict');
         });
     }
 
