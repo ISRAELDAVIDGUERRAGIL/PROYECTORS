@@ -27,10 +27,10 @@ php artisan key:generate
 
 # 5. Crear base de datos en MySQL
 #    Entrar a MySQL y crear:
-#    CREATE DATABASE proyecto_api;
+#    CREATE DATABASE db_3066552;
 
 # 6. Editar .env con tus datos de MySQL
-#    DB_DATABASE=proyecto_api
+#    DB_DATABASE=db_3066552
 #    DB_USERNAME=root
 #    DB_PASSWORD=tu_password
 
