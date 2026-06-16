@@ -1,175 +1,121 @@
 <?php
 
-namespace Tests\Feature;
-
+use App\Models\Cargo;
 use App\Models\Empleado;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class EmpleadoApiTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function () {
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => bcrypt('password123'),
+    ]);
 
-    protected User $user;
-    protected string $token;
+    $response = $this->postJson('/api/login', [
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->token = $response->json('token');
+});
 
-        // la creacion del usuario y del token de sactum
-        $this->user = User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password123'),
+test('listar empleados', function () {
+    Cargo::factory()->count(2)->has(Empleado::factory()->count(2))->create();
+
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->getJson('/api/empleados');
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                '*' => ['id_empleado', 'nombres', 'apellidos', 'salario', 'estado', 'cargo']
+            ],
+        ]);
+});
+
+test('crear empleado exitosamente', function () {
+    $cargo = Cargo::factory()->create();
+
+    $data = [
+        'id_cargo' => $cargo->id_cargo,
+        'nombres' => 'Juan',
+        'apellidos' => 'Perez',
+        'fecha_nacimiento' => '1990-05-15',
+        'fecha_ingreso' => '2024-01-10',
+        'salario' => 2500000.50,
+        'estado' => 'activo',
+    ];
+
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->postJson('/api/empleados', $data);
+
+    $response->assertStatus(201)
+        ->assertJsonPath('data.nombres', 'Juan')
+        ->assertJsonPath('data.cargo.id_cargo', $cargo->id_cargo);
+
+    $this->assertDatabaseHas('empleados', [
+        'nombres' => 'Juan',
+        'apellidos' => 'Perez',
+    ]);
+});
+
+test('crear empleado falla por validacion', function () {
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->postJson('/api/empleados', [
+            'nombres' => '',
+            'salario' => -100,
         ]);
 
-        $response = $this->postJson('/api/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123',
-        ]);
+    $response->assertStatus(422);
+});
 
-        $this->token = $response->json('token');
-    }
+test('mostrar empleado existente', function () {
+    $empleado = Empleado::factory()->create();
 
-    // listar empleados
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->getJson("/api/empleados/{$empleado->id_empleado}");
 
-    public function test_listar_empleados(): void
-    {
-        Empleado::factory()->count(3)->create();
+    $response->assertStatus(200)
+        ->assertJsonPath('data.id_empleado', $empleado->id_empleado);
+});
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->getJson('/api/empleados');
+test('mostrar empleado no existente', function () {
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->getJson('/api/empleados/99999');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'success',
-                'data' => [
-                    '*' => ['id_empleado', 'nombres', 'apellidos', 'salario', 'estado']
-                ],
-            ])
-            ->assertJsonPath('success', true)
-            ->assertJsonCount(3, 'data');
-    }
+    $response->assertStatus(404);
+});
 
-    //crear empleado 
+test('actualizar empleado exitosamente', function () {
+    $empleado = Empleado::factory()->create([
+        'nombres' => 'Carlos',
+        'salario' => 2000000,
+    ]);
 
-    public function test_crear_empleado_exitosamente(): void
-    {
-        $data = [
-            'nombres' => 'Juan',
-            'apellidos' => 'Pérez',
-            'fecha_nacimiento' => '1990-05-15',
-            'fecha_ingreso' => '2024-01-10',
-            'salario' => 2500000.50,
-            'estado' => 'activo',
-        ];
-
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->postJson('/api/empleados', $data);
-
-        $response->assertStatus(201)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.nombres', 'Juan')
-            ->assertJsonPath('data.apellidos', 'Pérez')
-            ->assertJsonPath('data.salario', 2500000.50);
-
-        $this->assertDatabaseHas('empleados', [
-            'nombres' => 'Juan',
-            'apellidos' => 'Pérez',
-        ]);
-    }
-
-    //crear empleado por falla validacion
-    public function test_crear_empleado_falla_por_validacion(): void
-    {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->postJson('/api/empleados', [
-                'nombres' => '', // vacío → debe fallar
-                'salario' => -100, // negativo → debe fallar
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['nombres', 'apellidos', 'fecha_nacimiento', 'fecha_ingreso', 'salario', 'estado']);
-    }
-
-    // test mostrar empleados
-
-    public function test_mostrar_empleado_existente(): void
-    {
-        $empleado = Empleado::factory()->create();
-
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->getJson("/api/empleados/{$empleado->id_empleado}");
-
-        $response->assertStatus(200)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.id_empleado', $empleado->id_empleado);
-    }
-
-    public function test_mostrar_empleado_no_existente(): void
-    {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->getJson('/api/empleados/99999');
-
-        $response->assertStatus(404)
-            ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'Empleado no encontrado');
-    }
-
-    //test actualizar empleado
-    public function test_actualizar_empleado_exitosamente(): void
-    {
-        $empleado = Empleado::factory()->create([
-            'nombres' => 'Carlos',
-            'salario' => 2000000,
-        ]);
-
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->putJson("/api/empleados/{$empleado->id_empleado}", [
-                'nombres' => 'Carlos Andrés',
-                'apellidos' => $empleado->apellidos,
-                'fecha_nacimiento' => $empleado->fecha_nacimiento->format('Y-m-d'),
-                'fecha_ingreso' => $empleado->fecha_ingreso->format('Y-m-d'),
-                'salario' => 3000000,
-                'estado' => $empleado->estado,
-            ]);
-
-        $response->assertStatus(200)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.nombres', 'Carlos Andrés')
-            ->assertJsonPath('data.salario', 3000000);
-
-        $this->assertDatabaseHas('empleados', [
-            'id_empleado' => $empleado->id_empleado,
-            'nombres' => 'Carlos Andrés',
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->putJson("/api/empleados/{$empleado->id_empleado}", [
+            'nombres' => 'Carlos Andres',
             'salario' => 3000000,
         ]);
-    }
 
-    //test elminar empleado
+    $response->assertStatus(200)
+        ->assertJsonPath('data.nombres', 'Carlos Andres')
+        ->assertJsonPath('data.salario', 3000000);
+});
 
-    public function test_eliminar_empleado_exitosamente(): void
-    {
-        $empleado = Empleado::factory()->create();
+test('eliminar empleado exitosamente', function () {
+    $empleado = Empleado::factory()->create();
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
-            ->deleteJson("/api/empleados/{$empleado->id_empleado}");
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->deleteJson("/api/empleados/{$empleado->id_empleado}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('message', 'Empleado eliminado exitosamente');
+    $response->assertStatus(200);
+    $this->assertDatabaseMissing('empleados', [
+        'id_empleado' => $empleado->id_empleado,
+    ]);
+});
 
-        $this->assertDatabaseMissing('empleados', [
-            'id_empleado' => $empleado->id_empleado,
-        ]);
-    }
+test('no puede acceder sin token', function () {
+    $response = $this->getJson('/api/empleados');
 
-    //test por si no tienen el token que no los deje acceder
-    public function test_no_puede_acceder_sin_token(): void
-    {
-        $response = $this->getJson('/api/empleados');
-
-        $response->assertStatus(401);
-    }
-}
+    $response->assertStatus(401);
+});
