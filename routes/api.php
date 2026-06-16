@@ -1,29 +1,22 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CargoController;
 use App\Http\Controllers\Api\EmpleadoController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\FuncionCargoController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use App\Models\User;
 
-Route::post('/login', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+Route::post('/login', [AuthController::class, 'login']);
 
-    $user = User::where('email', $request->email)->first();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['Las credenciales son incorrectas.'],
-        ]);
-    }
+    Route::apiResource('cargos', CargoController::class)
+        ->parameters(['cargos' => 'cargo']);
 
-    return response()->json([
-        'token' => $user->createToken('api-token')->plainTextToken,
-    ]);
+    Route::apiResource('empleados', EmpleadoController::class)
+        ->parameters(['empleados' => 'empleado']);
+
+    Route::apiResource('funciones-cargo', FuncionCargoController::class)
+        ->parameters(['funciones-cargo' => 'funcionCargo']);
 });
-
-Route::middleware('auth:sanctum')->apiResource('empleados', EmpleadoController::class);

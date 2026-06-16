@@ -2,27 +2,19 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EmpleadoRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $rules = [
+            'id_cargo' => 'required|exists:cargos,id_cargo',
             'nombres' => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
             'fecha_nacimiento' => 'required|date|before:today',
@@ -30,6 +22,16 @@ class EmpleadoRequest extends FormRequest
             'salario' => 'required|numeric|min:0',
             'estado' => 'required|in:activo,inactivo',
         ];
+
+        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
+            $rules['id_cargo'] = 'sometimes|exists:cargos,id_cargo';
+            $rules['nombres'] = 'sometimes|string|max:100';
+            $rules['apellidos'] = 'sometimes|string|max:100';
+            $rules['fecha_nacimiento'] = 'sometimes|date|before:today';
+            $rules['fecha_ingreso'] = 'sometimes|date|before_or_equal:today';
+            $rules['salario'] = 'sometimes|numeric|min:0';
+            $rules['estado'] = 'sometimes|in:activo,inactivo';
+        }
 
         return $rules;
     }

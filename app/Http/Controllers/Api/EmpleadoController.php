@@ -3,79 +3,85 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\EmpleadoRequest;
 use App\Http\Resources\EmpleadoResource;
 use App\Models\Empleado;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class EmpleadoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): JsonResponse
     {
-        $empleados = Empleado::all();
+        $query = Empleado::with('cargo');
+
+        if ($request->filled('nombre')) {
+            $query->where('nombres', 'LIKE', "%{$request->nombre}%");
+        }
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('cargo')) {
+            $query->where('id_cargo', $request->cargo);
+        }
+
+        if ($request->filled('cargos')) {
+            $query->whereIn('id_cargo', explode(',', $request->cargos));
+        }
+
+        if ($request->filled('salario_min') && $request->filled('salario_max')) {
+            $query->whereBetween('salario', [$request->salario_min, $request->salario_max]);
+        }
+
+        $empleados = $query->paginate(10);
+
         return response()->json([
-            'success' => true,
             'data' => EmpleadoResource::collection($empleados),
-        ]); 
+            'meta' => [
+                'total' => $empleados->total(),
+                'per_page' => $empleados->perPage(),
+                'current_page' => $empleados->currentPage(),
+            ],
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(EmpleadoRequest $request)
+    public function store(EmpleadoRequest $request): JsonResponse
     {
         $empleado = Empleado::create($request->validated());
+        $empleado->load('cargo');
+
         return response()->json([
-            'success' => true,
-            'message' => 'Empleado creado exitosamente',
             'data' => new EmpleadoResource($empleado),
         ], 201);
-
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id): JsonResponse
+    public function show(Empleado $empleado): JsonResponse
     {
-        $empleado = Empleado::find($id);
-        if (!$empleado) {
-            return response()->json(['success' => false, 'message' => 'Empleado no encontrado'], 404);
-        }
-        return response()->json(['success' => true, 'data' => new EmpleadoResource($empleado)]);
-    }
+        $empleado->load('cargo');
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(EmpleadoRequest $request, string $id): JsonResponse
-    {
-        $empleado = Empleado::find($id);
-        if (!$empleado) {
-            return response()->json(['success' => false, 'message' => 'Empleado no encontrado'], 404);
-        }
-        $empleado->update($request->validated());
         return response()->json([
-            'success' => true,
-            'message' => 'Empleado actualizado exitosamente',
             'data' => new EmpleadoResource($empleado),
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): JsonResponse
+    public function update(EmpleadoRequest $request, Empleado $empleado): JsonResponse
     {
-        $empleado = Empleado::find($id);
-        if (!$empleado) {
-            return response()->json(['success' => false, 'message' => 'Empleado no encontrado'], 404);
-        }
+        $empleado->update($request->validated());
+        $empleado->load('cargo');
+
+        return response()->json([
+            'data' => new EmpleadoResource($empleado),
+        ]);
+    }
+
+    public function destroy(Empleado $empleado): JsonResponse
+    {
         $empleado->delete();
-        return response()->json(['success' => true, 'message' => 'Empleado eliminado exitosamente']);
+
+        return response()->json([
+            'message' => 'Empleado eliminado correctamente.',
+        ]);
     }
 }
