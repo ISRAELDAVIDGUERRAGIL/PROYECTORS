@@ -37,7 +37,7 @@ php artisan key:generate
 # 7. Ejecutar migraciones y seeders (siempre limpia y recrea todo)
 php artisan migrate:fresh --seed
 
-# 9. Ejecutar tests
+# 8. Ejecutar tests
 php artisan test
 
 # Tambien con Pest
@@ -46,7 +46,7 @@ php vendor/bin/pest
 # Test especifico
 php vendor/bin/pest --filter="crear cargo"
 
-# 10. Iniciar servidor local
+# 9. Iniciar servidor local
 php artisan serve
 ```
 
