@@ -76,25 +76,21 @@ Respuesta:
 }
 ```
 
-### 2. Copiar el token
+### 2. Copiar el token de la respuesta
 
-Copia el valor de `"token"` de la respuesta (todo lo que esta entre comillas, ejemplo: `1|abc123def456...`) y guardalo en una variable:
-
-```bash
-TOKEN="1|abc123def456..."
-```
+Copia el valor de `"token"` que aparece en la respuesta (ejemplo: `1|abc123def456...`).
 
 ### 3. Usar el token
 
-Pasa el token en cada peticion con el encabezado `Authorization: Bearer`:
+Pega el token copiado en el encabezado `Authorization: Bearer` de cada peticion (reemplaza `<token>` por el valor real):
 
 ```bash
 curl -s http://localhost:8000/api/empleados \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 
 curl -s -X POST http://localhost:8000/api/cargos \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"nombre_cargo":"Gerente"}'
 ```
 
@@ -102,10 +98,10 @@ curl -s -X POST http://localhost:8000/api/cargos \
 
 ```bash
 curl -s -X POST http://localhost:8000/api/logout \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
-> Si tienes `jq` instalado puedes hacerlo en un solo paso:
+> Si tienes `jq` instalado puedes extraer el token automaticamente:
 > ```bash
 > TOKEN=$(curl -s -X POST http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"12345678"}' | jq -r '.token')
 > ```
@@ -184,36 +180,33 @@ curl -s -X POST http://localhost:8000/api/login \
   -d '{"email":"admin@test.com","password":"12345678"}'
 ```
 
-Copiar el token de la respuesta y guardarlo:
-```bash
-TOKEN="1|abc123def456..."
-```
+> Copia el valor de `"token"` de la respuesta (ej: `1|abc123def456...`) y usalo donde dice `<token>`.
 
 ### 2. Crear cargo
 ```bash
 curl -s -X POST http://localhost:8000/api/cargos \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"nombre_cargo":"Gerente","descripcion":"Responsable del area"}'
 ```
 
 ### 3. Listar cargos
 ```bash
 curl -s http://localhost:8000/api/cargos \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 4. Mostrar cargo
 ```bash
 curl -s http://localhost:8000/api/cargos/1 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 5. Actualizar cargo
 ```bash
 curl -s -X PUT http://localhost:8000/api/cargos/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"nombre_cargo":"Gerente General"}'
 ```
 
@@ -221,39 +214,39 @@ curl -s -X PUT http://localhost:8000/api/cargos/1 \
 ```bash
 curl -s -X POST http://localhost:8000/api/empleados \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"id_cargo":1,"nombres":"Juan","apellidos":"Perez","fecha_nacimiento":"1990-05-15","fecha_ingreso":"2024-01-10","salario":2500000.50,"estado":"activo"}'
 ```
 
 ### 7. Listar empleados
 ```bash
 curl -s http://localhost:8000/api/empleados \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 8. Listar empleados con filtros
 ```bash
 curl -s "http://localhost:8000/api/empleados?nombre=Juan&estado=activo" \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 9. Mostrar empleado
 ```bash
 curl -s http://localhost:8000/api/empleados/1 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 10. Mostrar empleado inexistente (debe dar 404)
 ```bash
 curl -s http://localhost:8000/api/empleados/99999 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 11. Actualizar empleado
 ```bash
 curl -s -X PUT http://localhost:8000/api/empleados/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"nombres":"Carlos","salario":3000000}'
 ```
 
@@ -261,46 +254,46 @@ curl -s -X PUT http://localhost:8000/api/empleados/1 \
 ```bash
 curl -s -X POST http://localhost:8000/api/funciones-cargo \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"id_cargo":1,"descripcion_funcion":"Supervisar el equipo","estado":"activo"}'
 ```
 
 ### 13. Listar funciones de cargo
 ```bash
 curl -s http://localhost:8000/api/funciones-cargo \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 14. Actualizar funcion
 ```bash
 curl -s -X PUT http://localhost:8000/api/funciones-cargo/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -d '{"descripcion_funcion":"Funcion actualizada"}'
 ```
 
 ### 15. Eliminar funcion
 ```bash
 curl -s -X DELETE http://localhost:8000/api/funciones-cargo/1 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 16. Eliminar empleado
 ```bash
 curl -s -X DELETE http://localhost:8000/api/empleados/1 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 17. Eliminar cargo
 ```bash
 curl -s -X DELETE http://localhost:8000/api/cargos/1 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 18. Logout (invalida el token)
 ```bash
 curl -s -X POST http://localhost:8000/api/logout \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
 
 ### 19. Acceso sin token (debe dar 401)
