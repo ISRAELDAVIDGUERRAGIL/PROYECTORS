@@ -4,7 +4,7 @@ API REST para gestion de empleados, cargos y funciones de cargo. Construida con 
 
 ## Requisitos
 
-- PHP ^8.3
+- PHP ^8.3 (extensiones: PDO, pdo_mysql, mbstring, xml, curl, json, tokenizer, ctype)
 - Composer
 - MySQL
 - Node.js (opcional, para assets)
@@ -27,14 +27,15 @@ php artisan key:generate
 
 # 5. Crear base de datos en MySQL
 #    Entrar a MySQL y crear:
-#    CREATE DATABASE db_3066552;
+#    CREATE DATABASE proyecto_api;
 
-# 6. Configurar .env con tus datos
-#    DB_DATABASE=db_3066552
+# 6. Editar .env con tus datos de MySQL
+#    DB_DATABASE=proyecto_api
 #    DB_USERNAME=root
 #    DB_PASSWORD=tu_password
 
-# 7. Ejecutar migraciones
+# 7. Ejecutar migraciones (crea tablas: users, cargos, empleados,
+#    funciones_cargo, sessions, cache, jobs, personal_access_tokens)
 php artisan migrate
 
 # 8. Ejecutar seeders
