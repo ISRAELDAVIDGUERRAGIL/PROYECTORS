@@ -60,22 +60,58 @@ php artisan serve
 | Email | `admin@test.com` |
 | Password | `12345678` |
 
-## Como obtener el token
+## Como obtener y usar el token
+
+### 1. Iniciar sesion y guardar el token
 
 ```bash
-curl -s -X POST http://localhost:8000/api/login \
+# Hacer login y extraer el token
+TOKEN=$(curl -s -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@test.com","password":"12345678"}'
+  -d '{"email":"admin@test.com","password":"12345678"}' | jq -r '.token')
 ```
 
-Respuesta:
+Respuesta del servidor:
 ```json
 {
-  "usuario": { ... },
-  "token": "1|abc123...",
+  "usuario": {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@test.com"
+  },
+  "token": "1|abc123def456...",
   "type": "Bearer"
 }
 ```
+
+### 2. Usar el token en las siguientes peticiones
+
+Pasar el token en el encabezado `Authorization: Bearer`:
+
+```bash
+# Listar empleados
+curl -s http://localhost:8000/api/empleados \
+  -H "Authorization: Bearer $TOKEN"
+
+# Crear un cargo
+curl -s -X POST http://localhost:8000/api/cargos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"nombre_cargo":"Gerente"}'
+```
+
+### 3. Cerrar sesion (invalida el token)
+
+```bash
+curl -s -X POST http://localhost:8000/api/logout \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+> Si no tienes `jq` instalado, puedes copiar manualmente el token de la respuesta:
+> ```bash
+> curl -s -X POST http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"12345678"}'
+> export TOKEN="1|abc123def456..."  # pegar el token que devolvio el login
+> ```
 
 ## Endpoints
 
