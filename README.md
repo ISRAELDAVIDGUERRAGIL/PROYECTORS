@@ -40,7 +40,16 @@ php artisan migrate
 # 8. Ejecutar seeders
 php artisan db:seed
 
-# 9. Iniciar servidor
+# 9. Ejecutar tests
+php artisan test
+
+# Tambien con Pest
+php vendor/bin/pest
+
+# Test especifico
+php vendor/bin/pest --filter="crear cargo"
+
+# 10. Iniciar servidor local
 php artisan serve
 ```
 
@@ -234,19 +243,6 @@ curl -s -X DELETE http://localhost:8000/api/funciones-cargo/1 \
 ### Acceso sin token (debe dar 401)
 ```bash
 curl -s http://localhost:8000/api/empleados
-```
-
-## Ejecutar tests
-
-```bash
-# Todos los tests
-php artisan test
-
-# Con Pest
-php vendor/bin/pest
-
-# Test especifico
-php vendor/bin/pest --filter="crear cargo"
 ```
 
 ## Estructura del proyecto
