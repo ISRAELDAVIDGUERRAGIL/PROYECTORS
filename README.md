@@ -78,9 +78,13 @@ Respuesta:
 
 ### 2. Guardar el token en una variable
 
+Copia el valor de `"token"` de la respuesta (ej: `1|abc123def456...`) y pegalo en la terminal:
+
 ```bash
 TOKEN="1|abc123def456..."
 ```
+
+Esto guarda el token en la memoria de esa terminal. Mientras no la cierres, `$TOKEN` funcionara en todos los comandos.
 
 ### 3. Usar el token
 
@@ -203,7 +207,7 @@ curl -s -X POST http://localhost:8000/api/cargos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"nombre_cargo":"Gerente","descripcion":"Responsable del area"}'
-
+  
 # 4. LISTAR CARGOS
 curl -s http://localhost:8000/api/cargos \
   -H "Authorization: Bearer $TOKEN"
