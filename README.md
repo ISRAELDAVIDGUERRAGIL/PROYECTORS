@@ -183,11 +183,17 @@ php artisan serve
 ### Terminal 2: Probar la API
 
 ```bash
-# 1. LOGIN - guardar token en variable
-TOKEN=$(curl -s -X POST http://localhost:8000/api/login \
+# 1. LOGIN - copiar el token de la respuesta
+curl -s -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@test.com","password":"12345678"}' | jq -r '.token')
-echo $TOKEN
+  -d '{"email":"admin@test.com","password":"12345678"}'
+```
+
+De la respuesta copia el valor de `"token"` (ej: `1|abc123def456...`) y pegalo donde dice `TOKEN`:
+
+```bash
+# Guardar token copiado
+TOKEN="1|abc123def456..."
 
 # 2. SIN TOKEN (debe dar 401)
 curl -s http://localhost:8000/api/empleados
@@ -275,12 +281,6 @@ curl -s -X POST http://localhost:8000/api/logout \
 # 20. ACCESO SIN TOKEN (debe dar 401)
 curl -s http://localhost:8000/api/empleados
 ```
-
-> Si no tienes `jq` instalado, usa `apt install jq` (Linux), `brew install jq` (Mac) o descargalo de https://jqlang.github.io/jq/. En Windows PowerShell puedes extraer el token manualmente:
-> ```bash
-> $RESPONSE=curl -s -X POST http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"12345678"}'
-> $TOKEN=($RESPONSE | ConvertFrom-Json).token
-> ```
 
 ## Estructura del proyecto
 
