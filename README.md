@@ -62,55 +62,55 @@ php artisan serve
 
 ## Como obtener y usar el token
 
-### 1. Iniciar sesion y guardar el token
+### 1. Iniciar sesion
 
 ```bash
-# Hacer login y extraer el token
-TOKEN=$(curl -s -X POST http://localhost:8000/api/login \
+curl -s -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@test.com","password":"12345678"}' | jq -r '.token')
+  -d '{"email":"admin@test.com","password":"12345678"}'
 ```
 
-Respuesta del servidor:
+Respuesta:
 ```json
 {
-  "usuario": {
-    "id": 1,
-    "name": "Admin",
-    "email": "admin@test.com"
-  },
+  "usuario": { "id": 1, "name": "Admin", "email": "admin@test.com" },
   "token": "1|abc123def456...",
   "type": "Bearer"
 }
 ```
 
-### 2. Usar el token en las siguientes peticiones
+### 2. Copiar el token
 
-Pasar el token en el encabezado `Authorization: Bearer`:
+Copia el valor de `"token"` de la respuesta (todo lo que esta entre comillas, ejemplo: `1|abc123def456...`) y guardalo en una variable:
 
 ```bash
-# Listar empleados
+TOKEN="1|abc123def456..."
+```
+
+### 3. Usar el token
+
+Pasa el token en cada peticion con el encabezado `Authorization: Bearer`:
+
+```bash
 curl -s http://localhost:8000/api/empleados \
   -H "Authorization: Bearer $TOKEN"
 
-# Crear un cargo
 curl -s -X POST http://localhost:8000/api/cargos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"nombre_cargo":"Gerente"}'
 ```
 
-### 3. Cerrar sesion (invalida el token)
+### 4. Cerrar sesion
 
 ```bash
 curl -s -X POST http://localhost:8000/api/logout \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-> Si no tienes `jq` instalado, puedes copiar manualmente el token de la respuesta:
+> Si tienes `jq` instalado puedes hacerlo en un solo paso:
 > ```bash
-> curl -s -X POST http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"12345678"}'
-> export TOKEN="1|abc123def456..."  # pegar el token que devolvio el login
+> TOKEN=$(curl -s -X POST http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"12345678"}' | jq -r '.token')
 > ```
 
 ## Endpoints
