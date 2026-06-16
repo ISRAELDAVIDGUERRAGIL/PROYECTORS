@@ -34,12 +34,8 @@ php artisan key:generate
 #    DB_USERNAME=root
 #    DB_PASSWORD=tu_password
 
-# 7. Ejecutar migraciones (crea tablas: users, cargos, empleados,
-#    funciones_cargo, sessions, cache, jobs, personal_access_tokens)
-php artisan migrate
-
-# 8. Ejecutar seeders
-php artisan db:seed
+# 7. Ejecutar migraciones y seeders (siempre limpia y recrea todo)
+php artisan migrate:fresh --seed
 
 # 9. Ejecutar tests
 php artisan test
