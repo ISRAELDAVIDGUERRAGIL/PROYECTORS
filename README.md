@@ -14,7 +14,7 @@ API REST para gestion de empleados, cargos y funciones de cargo. Construida con 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/ISRAELDAVIDGUERRAGIL/PROYECTORS.git
-cd proyecto-api
+cd proyectors
 
 # 2. Instalar dependencias
 composer install
