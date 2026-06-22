@@ -1,6 +1,6 @@
 # API Empleados y Cargos
 
-API REST para gestion de empleados, cargos y funciones de cargo. Construida con Laravel 13, Sanctum y Pest.
+API REST para gestion de empleados, cargos y funciones de cargo. Construida con Laravel 13, Sanctum y Pest. Preparada para integracion con vistas y consumo de API.
 
 ## Requisitos
 
@@ -59,7 +59,24 @@ php artisan serve
 
 ## Como obtener y usar el token
 
-### 1. Iniciar sesion
+### 1. Registrar un nuevo usuario
+
+```bash
+curl -s -X POST http://localhost:8000/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@test.com","password":"12345678","password_confirmation":"12345678"}'
+```
+
+Respuesta:
+```json
+{
+  "usuario": { "id": 1, "name": "Admin", "email": "admin@test.com" },
+  "token": "1|abc123def456...",
+  "type": "Bearer"
+}
+```
+
+### 2. Iniciar sesion (si ya tienes usuario)
 
 ```bash
 curl -s -X POST http://localhost:8000/api/login \
@@ -76,7 +93,7 @@ Respuesta:
 }
 ```
 
-### 2. Guardar el token en una variable
+### 3. Guardar el token en una variable
 
 Copia el valor de `"token"` de la respuesta (ej: `1|abc123def456...`) y pegalo en la terminal:
 
@@ -86,7 +103,7 @@ TOKEN="1|abc123def456..."
 
 Esto guarda el token en la memoria de esa terminal. Mientras no la cierres, `$TOKEN` funcionara en todos los comandos.
 
-### 3. Usar el token
+### 4. Usar el token
 
 Usa `$TOKEN` en el encabezado `Authorization: Bearer`:
 
@@ -100,7 +117,7 @@ curl -s -X POST http://localhost:8000/api/cargos \
   -d '{"nombre_cargo":"Gerente"}'
 ```
 
-### 4. Cerrar sesion
+### 5. Cerrar sesion
 
 ```bash
 curl -s -X POST http://localhost:8000/api/logout \
@@ -113,6 +130,7 @@ curl -s -X POST http://localhost:8000/api/logout \
 
 | Metodo | Ruta | Auth | Descripcion |
 |--------|------|------|-------------|
+| POST | `/api/register` | No | Registrar usuario |
 | POST | `/api/login` | No | Iniciar sesion |
 | POST | `/api/logout` | Si | Cerrar sesion |
 
@@ -184,7 +202,12 @@ php artisan serve
 ### Terminal 2: Probar la API
 
 ```bash
-# 1. LOGIN
+# 1. REGISTRO
+curl -s -X POST http://localhost:8000/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@test.com","password":"12345678","password_confirmation":"12345678"}'
+
+# 2. LOGIN
 curl -s -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@test.com","password":"12345678"}'
@@ -199,90 +222,90 @@ TOKEN="1|abc123def456..."
 A partir de aqui todos los comandos usan `$TOKEN`:
 
 ```bash
-# 2. SIN TOKEN (debe dar 401)
+# 3. SIN TOKEN (debe dar 401)
 curl -s http://localhost:8000/api/empleados
 
-# 3. CREAR CARGO
+# 4. CREAR CARGO
 curl -s -X POST http://localhost:8000/api/cargos \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"nombre_cargo":"Gerente","descripcion":"Responsable del area"}'
   
-# 4. LISTAR CARGOS
+# 5. LISTAR CARGOS
 curl -s http://localhost:8000/api/cargos \
   -H "Authorization: Bearer $TOKEN"
 
-# 5. MOSTRAR CARGO
+# 6. MOSTRAR CARGO
 curl -s http://localhost:8000/api/cargos/1 \
   -H "Authorization: Bearer $TOKEN"
 
-# 6. ACTUALIZAR CARGO
+# 7. ACTUALIZAR CARGO
 curl -s -X PUT http://localhost:8000/api/cargos/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"nombre_cargo":"Gerente General"}'
 
-# 7. CREAR EMPLEADO
+# 8. CREAR EMPLEADO
 curl -s -X POST http://localhost:8000/api/empleados \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"id_cargo":1,"nombres":"Juan","apellidos":"Perez","fecha_nacimiento":"1990-05-15","fecha_ingreso":"2024-01-10","salario":2500000.50,"estado":"activo"}'
 
-# 8. LISTAR EMPLEADOS
+# 9. LISTAR EMPLEADOS
 curl -s http://localhost:8000/api/empleados \
   -H "Authorization: Bearer $TOKEN"
 
-# 9. LISTAR EMPLEADOS CON FILTROS
+# 10. LISTAR EMPLEADOS CON FILTROS
 curl -s "http://localhost:8000/api/empleados?nombre=Juan&estado=activo" \
   -H "Authorization: Bearer $TOKEN"
 
-# 10. MOSTRAR EMPLEADO
+# 11. MOSTRAR EMPLEADO
 curl -s http://localhost:8000/api/empleados/1 \
   -H "Authorization: Bearer $TOKEN"
 
-# 11. MOSTRAR EMPLEADO 404
+# 12. MOSTRAR EMPLEADO 404
 curl -s http://localhost:8000/api/empleados/99999 \
   -H "Authorization: Bearer $TOKEN"
 
-# 12. ACTUALIZAR EMPLEADO
+# 13. ACTUALIZAR EMPLEADO
 curl -s -X PUT http://localhost:8000/api/empleados/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"nombres":"Carlos","salario":3000000}'
 
-# 13. CREAR FUNCION
+# 14. CREAR FUNCION
 curl -s -X POST http://localhost:8000/api/funciones-cargo \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"id_cargo":1,"descripcion_funcion":"Supervisar el equipo","estado":"activo"}'
 
-# 14. LISTAR FUNCIONES
+# 15. LISTAR FUNCIONES
 curl -s http://localhost:8000/api/funciones-cargo \
   -H "Authorization: Bearer $TOKEN"
 
-# 15. ACTUALIZAR FUNCION
+# 16. ACTUALIZAR FUNCION
 curl -s -X PUT http://localhost:8000/api/funciones-cargo/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"descripcion_funcion":"Funcion actualizada"}'
 
-# 16. ELIMINAR FUNCION
+# 17. ELIMINAR FUNCION
 curl -s -X DELETE http://localhost:8000/api/funciones-cargo/1 \
   -H "Authorization: Bearer $TOKEN"
 
-# 17. ELIMINAR EMPLEADO
+# 18. ELIMINAR EMPLEADO
 curl -s -X DELETE http://localhost:8000/api/empleados/1 \
   -H "Authorization: Bearer $TOKEN"
 
-# 18. ELIMINAR CARGO
+# 19. ELIMINAR CARGO
 curl -s -X DELETE http://localhost:8000/api/cargos/1 \
   -H "Authorization: Bearer $TOKEN"
 
-# 19. LOGOUT (invalida el token)
+# 20. LOGOUT (invalida el token)
 curl -s -X POST http://localhost:8000/api/logout \
   -H "Authorization: Bearer $TOKEN"
 
-# 20. ACCESO SIN TOKEN (debe dar 401)
+# 21. ACCESO SIN TOKEN (debe dar 401)
 curl -s http://localhost:8000/api/empleados
 ```
 
@@ -297,6 +320,7 @@ app/
 │   │   ├── EmpleadoController.php
 │   │   └── FuncionCargoController.php
 │   ├── Requests/
+│   │   ├── RegisterRequest.php
 │   │   ├── EmpleadoRequest.php
 │   │   ├── StoreCargoRequest.php
 │   │   ├── UpdateCargoRequest.php
