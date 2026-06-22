@@ -74,36 +74,84 @@
                         </tr>
                     </tbody>
                 </table>
+
+                {{-- Paginacion --}}
+                <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700"
+                    x-show="meta.last_page > 1">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        Mostrando <span x-text="meta.from"></span> a <span x-text="meta.to"></span> de <span x-text="meta.total"></span>
+                    </div>
+                    <div class="flex gap-1">
+                        <button @click="cargar(1)" :disabled="meta.current_page === 1"
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&laquo;</button>
+                        <button @click="cargar(meta.current_page - 1)" :disabled="meta.current_page === 1"
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&lsaquo;</button>
+
+                        <template x-for="page in paginas" :key="page">
+                            <button @click="cargar(page)" x-text="page"
+                                :class="page === meta.current_page
+                                    ? 'px-3 py-1 text-sm rounded bg-blue-600 text-white'
+                                    : 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                x-show="page !== '...'"
+                                :disabled="page === '...'"></button>
+                            <span x-show="page === '...'" class="px-2 py-1 text-sm text-gray-400">...</span>
+                        </template>
+
+                        <button @click="cargar(meta.current_page + 1)" :disabled="meta.current_page === meta.last_page"
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&rsaquo;</button>
+                        <button @click="cargar(meta.last_page)" :disabled="meta.current_page === meta.last_page"
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&raquo;</button>
+                    </div>
+                </div>
             </div>
         </div>
 
         @include('empleados.form')
     </div>
 
-    <script type="module">
-        import { crearClienteAPI } from '{{ Vite::asset('resources/js/api.js') }}';
-        const api = crearClienteAPI();
-
+    <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('crudEmpleados', () => ({
                 lista: [],
                 cargosLista: [],
+                meta: { current_page: 1, last_page: 1, from: 0, to: 0, total: 0 },
                 editando: null,
                 filtros: { nombre: '', estado: '', cargo: '' },
                 form: { id_cargo: '', nombres: '', apellidos: '', fecha_nacimiento: '', fecha_ingreso: '', salario: '', estado: 'activo' },
 
-                async cargar() {
-                    const params = new URLSearchParams();
-                    if (this.filtros.nombre) params.set('nombre', this.filtros.nombre);
-                    if (this.filtros.estado) params.set('estado', this.filtros.estado);
-                    if (this.filtros.cargo) params.set('cargo', this.filtros.cargo);
-                    const qs = params.toString() ? '?' + params.toString() : '';
-                    const [empData, cargData] = await Promise.all([
-                        api.listar('empleados', qs),
-                        api.listar('cargos'),
-                    ]);
-                    this.lista = empData.data;
-                    this.cargosLista = cargData.data;
+                get paginas() {
+                    const current = this.meta.current_page;
+                    const last = this.meta.last_page;
+                    const pages = [];
+                    for (let i = 1; i <= last; i++) {
+                        if (i === 1 || i === last || (i >= current - 1 && i <= current + 1)) {
+                            pages.push(i);
+                        } else if (pages[pages.length - 1] !== '...') {
+                            pages.push('...');
+                        }
+                    }
+                    return pages;
+                },
+
+                async cargar(page = 1) {
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.filtros.nombre) params.set('nombre', this.filtros.nombre);
+                        if (this.filtros.estado) params.set('estado', this.filtros.estado);
+                        if (this.filtros.cargo) params.set('cargo', this.filtros.cargo);
+                        if (page > 1) params.set('page', page);
+                        const qs = params.toString() ? '?' + params.toString() : '';
+                        const [empData, cargData] = await Promise.all([
+                            window.api.listar('empleados', qs),
+                            window.api.listar('cargos'),
+                        ]);
+                        this.lista = empData.data;
+                        this.meta = empData.meta;
+                        this.cargosLista = cargData.data;
+                    } catch (e) {
+                        console.error('Error al cargar empleados:', e);
+                        alert('Error al cargar: ' + (e.message || 'No autenticado'));
+                    }
                 },
 
                 abrirForm() {
@@ -128,18 +176,18 @@
 
                 async guardar() {
                     if (this.editando) {
-                        await api.actualizar('empleados', this.editando, this.form);
+                        await window.api.actualizar('empleados', this.editando, this.form);
                     } else {
-                        await api.crear('empleados', this.form);
+                        await window.api.crear('empleados', this.form);
                     }
                     this.$dispatch('close-modal');
-                    await this.cargar();
+                    await this.cargar(this.meta.current_page);
                 },
 
                 async eliminar(id) {
                     if (!confirm('Eliminar este empleado?')) return;
-                    await api.eliminar('empleados', id);
-                    await this.cargar();
+                    await window.api.eliminar('empleados', id);
+                    await this.cargar(this.meta.current_page);
                 },
             }));
         });

@@ -15,13 +15,13 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('cargos.index')" :active="request()->routeIs('cargos.*')">
+                    <x-nav-link :href="route('cargos')" :active="request()->routeIs('cargos')">
                         {{ __('Cargos') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('empleados.index')" :active="request()->routeIs('empleados.*')">
+                    <x-nav-link :href="route('empleados')" :active="request()->routeIs('empleados')">
                         {{ __('Empleados') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('funciones.index')" :active="request()->routeIs('funciones.*')">
+                    <x-nav-link :href="route('funciones')" :active="request()->routeIs('funciones')">
                         {{ __('Funciones') }}
                     </x-nav-link>
                 </div>
@@ -79,13 +79,13 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('cargos.index')" :active="request()->routeIs('cargos.*')">
+            <x-responsive-nav-link :href="route('cargos')" :active="request()->routeIs('cargos')">
                 {{ __('Cargos') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('empleados.index')" :active="request()->routeIs('empleados.*')">
+            <x-responsive-nav-link :href="route('empleados')" :active="request()->routeIs('empleados')">
                 {{ __('Empleados') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('funciones.index')" :active="request()->routeIs('funciones.*')">
+            <x-responsive-nav-link :href="route('funciones')" :active="request()->routeIs('funciones')">
                 {{ __('Funciones') }}
             </x-responsive-nav-link>
         </div>
