@@ -19,25 +19,28 @@ cd proyectors
 # 2. Instalar dependencias
 composer install
 
-# 3. Configurar entorno
+# 3. Instalar npm
+npm install
+
+# 4. Configurar entorno
 cp .env.example .env
 
-# 4. Generar key
+# 5. Generar key
 php artisan key:generate
 
-# 5. Crear base de datos en MySQL
+# 6. Crear base de datos en MySQL
 #    Entrar a MySQL y crear:
 #    CREATE DATABASE db_3066552;
 
-# 6. Editar .env con tus datos de MySQL
+# 7. Editar .env con tus datos de MySQL
 #    DB_DATABASE=db_3066552
 #    DB_USERNAME=root
 #    DB_PASSWORD=tu_password
 
-# 7. Ejecutar migraciones y seeders (siempre limpia y recrea todo)
+# 8. Ejecutar migraciones y seeders (siempre limpia y recrea todo)
 php artisan migrate:fresh --seed
 
-# 8. Ejecutar tests
+# 9. Ejecutar tests
 php artisan test
 
 # Tambien con Pest
