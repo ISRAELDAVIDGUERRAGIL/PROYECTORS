@@ -7,10 +7,17 @@
 
     <div x-data="crudCargos" x-init="cargar()">
         <div class="py-6 px-4 sm:px-6 lg:px-8">
-            <button @click="abrirForm()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium mb-4">
-                + Nuevo Cargo
-            </button>
+            <div class="flex gap-4 mb-4 flex-wrap items-end">
+                <button @click="abrirForm()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                    + Nuevo Cargo
+                </button>
+
+                <div>
+                    <x-input-label for="filtro_nombre_cargo" value="Buscar por nombre" />
+                    <x-text-input id="filtro_nombre_cargo" x-model="filtro" @input.debounce.300ms="cargar()" class="mt-1 block" placeholder="Ej: Gerente" />
+                </div>
+            </div>
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -42,17 +49,18 @@
 
                 {{-- Paginacion --}}
                 <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700"
-                    x-show="meta.last_page > 1">
+                    x-show="meta.last_page > 1"
+                    x-cloak>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                         Mostrando <span x-text="meta.from"></span> a <span x-text="meta.to"></span> de <span x-text="meta.total"></span>
                     </div>
                     <div class="flex gap-1">
                         <button @click="cargar(1)" :disabled="meta.current_page === 1"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">
                             &laquo;
                         </button>
                         <button @click="cargar(meta.current_page - 1)" :disabled="meta.current_page === 1"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">
                             &lsaquo;
                         </button>
 
@@ -60,18 +68,18 @@
                             <button @click="cargar(page)" x-text="page"
                                 :class="page === meta.current_page
                                     ? 'px-3 py-1 text-sm rounded bg-blue-600 text-white'
-                                    : 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                    : 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
                                 x-show="page !== '...'"
                                 :disabled="page === '...'"></button>
                             <span x-show="page === '...'" class="px-2 py-1 text-sm text-gray-400">...</span>
                         </template>
 
                         <button @click="cargar(meta.current_page + 1)" :disabled="meta.current_page === meta.last_page"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">
                             &rsaquo;
                         </button>
                         <button @click="cargar(meta.last_page)" :disabled="meta.current_page === meta.last_page"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">
                             &raquo;
                         </button>
                     </div>
@@ -87,6 +95,7 @@
             Alpine.data('crudCargos', () => ({
                 lista: [],
                 meta: { current_page: 1, last_page: 1, from: 0, to: 0, total: 0 },
+                filtro: '',
                 editando: null,
                 form: { nombre_cargo: '', descripcion: '' },
 
@@ -106,7 +115,10 @@
 
                 async cargar(page = 1) {
                     try {
-                        const qs = page > 1 ? `?page=${page}` : '';
+                        const params = new URLSearchParams();
+                        if (this.filtro) params.set('nombre', this.filtro);
+                        if (page > 1) params.set('page', page);
+                        const qs = params.toString() ? '?' + params.toString() : '';
                         const data = await window.api.listar('cargos', qs);
                         this.lista = data.data;
                         this.meta = data.meta;
@@ -129,19 +141,27 @@
                 },
 
                 async guardar() {
-                    if (this.editando) {
-                        await window.api.actualizar('cargos', this.editando, this.form);
-                    } else {
-                        await window.api.crear('cargos', this.form);
+                    try {
+                        if (this.editando) {
+                            await window.api.actualizar('cargos', this.editando, this.form);
+                        } else {
+                            await window.api.crear('cargos', this.form);
+                        }
+                        this.$dispatch('close-modal');
+                        await this.cargar(this.meta.current_page);
+                    } catch (e) {
+                        alert('Error al guardar: ' + (e.message || 'Error desconocido'));
                     }
-                    this.$dispatch('close-modal');
-                    await this.cargar(this.meta.current_page);
                 },
 
                 async eliminar(id) {
                     if (!confirm('Eliminar este cargo?')) return;
-                    await window.api.eliminar('cargos', id);
-                    await this.cargar(this.meta.current_page);
+                    try {
+                        await window.api.eliminar('cargos', id);
+                        await this.cargar(this.meta.current_page);
+                    } catch (e) {
+                        alert('No se pudo eliminar: ' + (e.message || 'El cargo tiene empleados asignados'));
+                    }
                 },
             }));
         });

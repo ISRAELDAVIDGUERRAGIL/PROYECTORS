@@ -69,30 +69,31 @@
 
                 {{-- Paginacion --}}
                 <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700"
-                    x-show="meta.last_page > 1">
+                    x-show="meta.last_page > 1"
+                    x-cloak>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                         Mostrando <span x-text="meta.from"></span> a <span x-text="meta.to"></span> de <span x-text="meta.total"></span>
                     </div>
                     <div class="flex gap-1">
                         <button @click="cargar(1)" :disabled="meta.current_page === 1"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&laquo;</button>
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">&laquo;</button>
                         <button @click="cargar(meta.current_page - 1)" :disabled="meta.current_page === 1"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&lsaquo;</button>
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">&lsaquo;</button>
 
                         <template x-for="page in paginas" :key="page">
                             <button @click="cargar(page)" x-text="page"
                                 :class="page === meta.current_page
                                     ? 'px-3 py-1 text-sm rounded bg-blue-600 text-white'
-                                    : 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                    : 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
                                 x-show="page !== '...'"
                                 :disabled="page === '...'"></button>
                             <span x-show="page === '...'" class="px-2 py-1 text-sm text-gray-400">...</span>
                         </template>
 
                         <button @click="cargar(meta.current_page + 1)" :disabled="meta.current_page === meta.last_page"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&rsaquo;</button>
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">&rsaquo;</button>
                         <button @click="cargar(meta.last_page)" :disabled="meta.current_page === meta.last_page"
-                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50">&raquo;</button>
+                            class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50">&raquo;</button>
                     </div>
                 </div>
             </div>
@@ -162,19 +163,27 @@
                 },
 
                 async guardar() {
-                    if (this.editando) {
-                        await window.api.actualizar('funciones-cargo', this.editando, this.form);
-                    } else {
-                        await window.api.crear('funciones-cargo', this.form);
+                    try {
+                        if (this.editando) {
+                            await window.api.actualizar('funciones-cargo', this.editando, this.form);
+                        } else {
+                            await window.api.crear('funciones-cargo', this.form);
+                        }
+                        this.$dispatch('close-modal');
+                        await this.cargar(this.meta.current_page);
+                    } catch (e) {
+                        alert('Error al guardar: ' + (e.message || 'Error desconocido'));
                     }
-                    this.$dispatch('close-modal');
-                    await this.cargar(this.meta.current_page);
                 },
 
                 async eliminar(id) {
                     if (!confirm('Eliminar esta funcion?')) return;
-                    await window.api.eliminar('funciones-cargo', id);
-                    await this.cargar(this.meta.current_page);
+                    try {
+                        await window.api.eliminar('funciones-cargo', id);
+                        await this.cargar(this.meta.current_page);
+                    } catch (e) {
+                        alert('No se pudo eliminar: ' + (e.message || 'Error desconocido'));
+                    }
                 },
             }));
         });

@@ -32,6 +32,9 @@ class CargoController extends Controller
                 'total' => $cargos->total(),
                 'per_page' => $cargos->perPage(),
                 'current_page' => $cargos->currentPage(),
+                'last_page' => $cargos->lastPage(),
+                'from' => $cargos->firstItem(),
+                'to' => $cargos->lastItem(),
             ],
         ]);
     }

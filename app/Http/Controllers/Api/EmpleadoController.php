@@ -43,6 +43,9 @@ class EmpleadoController extends Controller
                 'total' => $empleados->total(),
                 'per_page' => $empleados->perPage(),
                 'current_page' => $empleados->currentPage(),
+                'last_page' => $empleados->lastPage(),
+                'from' => $empleados->firstItem(),
+                'to' => $empleados->lastItem(),
             ],
         ]);
     }

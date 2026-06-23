@@ -32,6 +32,9 @@ class FuncionCargoController extends Controller
                 'total' => $funciones->total(),
                 'per_page' => $funciones->perPage(),
                 'current_page' => $funciones->currentPage(),
+                'last_page' => $funciones->lastPage(),
+                'from' => $funciones->firstItem(),
+                'to' => $funciones->lastItem(),
             ],
         ]);
     }

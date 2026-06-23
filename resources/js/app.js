@@ -1,44 +1,26 @@
 
-
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
-window.api = (function () {
-  const baseUrl = '/api';
+function csrf() {
+  const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
 
-  function csrf() {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-  }
+async function apiRequest(method, url, body) {
+  const h = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+  if (body) h['X-XSRF-TOKEN'] = csrf();
+  const r = await fetch('/api' + url, { method, headers: h, body: body ? JSON.stringify(body) : null });
+  if (!r.ok) throw await r.json().catch(() => ({}));
+  return r.json();
+}
 
-  async function request(url, options = {}) {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
-      headers['X-XSRF-TOKEN'] = csrf();
-    }
-
-    const res = await fetch(baseUrl + url, { ...options, headers });
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw body;
-    }
-
-    return res.json();
-  }
-
-  return {
-    listar: (r, params = '') => request(`/${r}${params}`),
-    crear: (r, datos) => request(`/${r}`, { method: 'POST', body: JSON.stringify(datos) }),
-    obtener: (r, id) => request(`/${r}/${id}`),
-    actualizar: (r, id, datos) => request(`/${r}/${id}`, { method: 'PUT', body: JSON.stringify(datos) }),
-    eliminar: (r, id) => request(`/${r}/${id}`, { method: 'DELETE' }),
-  };
-})();
+window.api = {
+  listar:     (ruta, params = '') => apiRequest('GET',    `/${ruta}${params}`),
+  crear:      (ruta, datos)        => apiRequest('POST',   `/${ruta}`, datos),
+  actualizar: (ruta, id, datos)    => apiRequest('PUT',    `/${ruta}/${id}`, datos),
+  eliminar:   (ruta, id)           => apiRequest('DELETE', `/${ruta}/${id}`),
+};
 
 Alpine.start();
