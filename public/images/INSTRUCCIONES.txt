@@ -1,0 +1,5 @@
+COLOCA AQUI LA IMAGEN DE KUROMI CON EL NOMBRE:
+
+kuromi-error.png
+
+La vista de error usa: asset('images/kuromi-error.png')

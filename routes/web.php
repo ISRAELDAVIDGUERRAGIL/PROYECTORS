@@ -21,4 +21,11 @@ Route::middleware('auth')->group(function () {
     Route::view('/funciones-cargo', 'funciones.index')->name('funciones');
 });
 
+Route::get('/error/{code}', function (string $code) {
+    if (!view()->exists("errors.{$code}")) {
+        $code = '500';
+    }
+    return response()->view("errors.{$code}", [], (int) $code);
+})->name('error');
+
 require __DIR__.'/auth.php';
